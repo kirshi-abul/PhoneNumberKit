@@ -23,16 +23,26 @@ public class CountryCodePickerViewController: UITableViewController {
     public let options: CountryCodePickerOptions
 
     let commonCountryCodes: [String]
+    
+    let allowedCountries: Array<String>?
 
     var shouldRestoreNavigationBarToHidden = false
 
     var hasCurrent = true
     var hasCommon = true
 
-    lazy var allCountries = utility
-        .allCountries()
-        .compactMap({ Country(for: $0, with: self.utility) })
-        .sorted(by: { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending })
+    lazy var allCountries: [Country] = {
+        if let allowedCountries {
+            return allowedCountries
+                .compactMap({ Country(for: $0, with: self.utility) })
+                .sorted(by: { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending })
+        } else {
+            return utility
+                .allCountries()
+                .compactMap({ Country(for: $0, with: self.utility) })
+                .sorted(by: { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending })
+        }
+    }()
 
     lazy var countries: [[Country]] = {
         let countries = allCountries
@@ -50,7 +60,9 @@ public class CountryCodePickerViewController: UITableViewController {
                 return collection
             }
 
-        let popular = commonCountryCodes.compactMap({ Country(for: $0, with: utility) })
+        let popular = commonCountryCodes.compactMap({
+            Country(for: $0, with: utility)
+        })
 
         var result: [[Country]] = []
         // Note we should maybe use the user's current carrier's country code?
@@ -77,9 +89,11 @@ public class CountryCodePickerViewController: UITableViewController {
     public init(
         utility: PhoneNumberUtility,
         options: CountryCodePickerOptions?,
+        allowedCountries: Array<String>? = nil,
         commonCountryCodes: [String] = CountryCodePicker.commonCountryCodes) {
         self.utility = utility
         self.commonCountryCodes = commonCountryCodes
+        self.allowedCountries = allowedCountries
         self.options = options ?? CountryCodePickerOptions()
         super.init(style: .grouped)
         self.commonInit()
@@ -89,6 +103,7 @@ public class CountryCodePickerViewController: UITableViewController {
         self.utility = PhoneNumberUtility()
         self.commonCountryCodes = CountryCodePicker.commonCountryCodes
         self.options = CountryCodePickerOptions()
+        self.allowedCountries = nil
         super.init(coder: aDecoder)
         self.commonInit()
     }
