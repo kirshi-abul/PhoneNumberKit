@@ -28,8 +28,8 @@ public class CountryCodePickerViewController: UITableViewController {
 
     var shouldRestoreNavigationBarToHidden = false
 
-    var hasCurrent = true
-    var hasCommon = true
+    var hasCurrent = false
+    var hasCommon = false
 
     lazy var allCountries: [Country] = {
         if let allowedCountries {
